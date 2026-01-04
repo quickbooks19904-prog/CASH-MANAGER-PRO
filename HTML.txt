@@ -5,46 +5,40 @@
 <title>Cash Manager PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 body{font-family:Segoe UI,Arial;background:#eef2f6;margin:0}
 header{background:#0f172a;color:#fff;padding:10px 15px;display:flex;justify-content:space-between;align-items:center}
 header .left{display:flex;align-items:center;gap:10px}
 header img{height:40px}
-.container{max-width:1200px;margin:auto;padding:20px}
+.container{max-width:1100px;margin:auto;padding:20px}
 .card{background:#fff;padding:15px;border-radius:10px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
-h2{color:#0f172a}
-input,select,button{width:100%;padding:8px;margin-top:5px}
-button{background:#2563eb;color:#fff;border:none;border-radius:6px;margin-top:10px;cursor:pointer}
-button.admin{background:#dc2626}
-button.gray{background:#475569}
 .hidden{display:none}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #ddd;padding:6px;text-align:center}
+input,select,button{width:100%;padding:8px;margin-top:6px}
+button{background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer}
+button.gray{background:#475569}
+h2{margin-top:0}
 
-/* ===== IMPRESSION ===== */
+/* PRINT */
 @media print{
- body{width:80mm;margin:0}
+ body{width:80mm}
  .no-print{display:none}
- #ticket,#dailyReport{font-size:12px;padding:5mm}
 }
 
-/* ===== LOCK ===== */
-#lockScreen{max-width:420px;margin:100px auto;text-align:center}
-.alert{background:#fde68a;padding:10px;border-radius:6px;font-weight:bold}
+/* LOCK */
+#lockScreen{max-width:420px;margin:80px auto;text-align:center}
+.alert{background:#fde68a;padding:10px;border-radius:6px;margin-bottom:10px}
 .support{font-size:12px;margin-top:10px}
 </style>
 </head>
 
 <body>
 
-<!-- 🔒 LICENCE -->
+<!-- 🔒 LOCK -->
 <div id="lockScreen" class="card hidden">
 <h2>🔐 Activation requise</h2>
 <div id="alertExpire" class="alert hidden"></div>
 <p id="lockMsg"></p>
-<input id="licenseCode" placeholder="Code d’installation / activation">
+<input id="licenseCode" placeholder="Code d’activation">
 <button onclick="checkLicense()">Valider</button>
 <hr>
 <div class="support">
@@ -53,15 +47,15 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 </div>
 </div>
 
+<!-- APP -->
+<div id="app" class="hidden">
+
 <header class="no-print">
 <div class="left">
 <img id="logoHeader">
 <b id="companyHeader"></b>
 </div>
-<div>
-<button class="gray" onclick="printDaily()">📊 Rapport journalier</button>
 <button class="gray" onclick="logout()">Déconnexion</button>
-</div>
 </header>
 
 <div class="container no-print">
@@ -69,15 +63,15 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 <div class="card" id="loginCard">
 <h2>Connexion</h2>
 <input id="user" placeholder="Utilisateur">
-<input id="pass" type="password">
+<input id="pass" type="password" placeholder="Mot de passe">
 <button onclick="login()">Connexion</button>
 </div>
 
 <div id="adminZone" class="card hidden">
 <h2>👑 Administration</h2>
 <input id="companyName" placeholder="Nom entreprise">
-<input id="companyLogo" placeholder="URL Logo">
-<button class="admin" onclick="saveCompany()">Enregistrer</button>
+<input id="companyLogo" placeholder="URL logo">
+<button onclick="saveCompany()">Enregistrer</button>
 </div>
 
 <div id="transactionZone" class="card hidden">
@@ -85,136 +79,120 @@ th,td{border:1px solid #ddd;padding:6px;text-align:center}
 <input id="client" placeholder="Client">
 <select id="service"><option>Moncash</option><option>Natcash</option></select>
 <select id="type"><option value="depot">Dépôt</option><option value="retrait">Retrait</option></select>
-<input id="amount" type="number" placeholder="Montant HTG">
-<button onclick="addTransaction()">Enregistrer & Imprimer</button>
+<input id="amount" type="number" placeholder="Montant (HTG)">
+<button onclick="addTransaction()">Enregistrer</button>
 </div>
 
-<div id="balanceZone" class="card hidden">
+<div class="card hidden" id="balanceZone">
 <h2>Soldes</h2>
-<p>Moncash : <b id="m"></b></p>
-<p>Natcash : <b id="n"></b></p>
-</div>
-</div>
-
-<!-- 🧾 TICKET -->
-<div id="ticket" class="hidden">
-<center>
-<img id="logoTicket" style="height:35px"><br>
-<b id="companyTicket"></b>
-</center>
-<hr>
-<p id="t0"></p><p id="t1"></p><p id="t2"></p>
-<p id="t3"></p><p id="t4"></p><p id="t5"></p>
-<hr>
-<center style="font-size:10px">
-Support : +509 3778-11-06<br>
-Développé par <b>Lucien Hyppolite</b>
-</center>
+<p>Moncash : <b id="m">0</b></p>
+<p>Natcash : <b id="n">0</b></p>
 </div>
 
-<!-- 📊 RAPPORT JOURNALIER -->
-<div id="dailyReport" class="hidden">
-<center>
-<img id="logoReport" style="height:35px"><br>
-<b id="companyReport"></b><br>
-<b>📊 RAPPORT JOURNALIER</b><br>
-<span id="reportDate"></span>
-</center>
-<hr>
-<div id="reportContent"></div>
-<hr>
-<center style="font-size:10px">
-Développé par <b>Lucien Hyppolite</b>
-</center>
+</div>
 </div>
 
 <script>
-/* ===== CONFIG ===== */
+/* ================= LICENCE ================= */
 const INSTALL_CODE="CM-INSTALL-982314";
-const ACTIVATION_CODE="CM-ACTIVE-2026-01";
-const ACTIVATION_DAYS=180;
+const ACTIVATE_CODE="CM-ACTIVE-2026";
+const DAYS_VALID=180;
 const ALERT_DAYS=10;
 
-/* ===== FORMAT HTG ===== */
-const formatHTG=v=>new Intl.NumberFormat("fr-HT",{style:"currency",currency:"HTG"}).format(v);
+function deviceId(){
+ return btoa(navigator.userAgent+screen.width+screen.height);
+}
 
-/* ===== LICENCE ===== */
-function deviceId(){return btoa(navigator.userAgent+screen.width);}
-function checkAppLock(){
+function showLock(msg){
+ lockScreen.classList.remove("hidden");
+ app.classList.add("hidden");
+ lockMsg.innerText=msg;
+}
+
+function checkApp(){
  const lic=JSON.parse(localStorage.getItem("license"));
  const now=Date.now();
- if(!lic){showLock("Code requis");return false;}
- if(now<lic.last){showLock("Date système modifiée");return false;}
- if(lic.device!==deviceId()){showLock("Licence invalide");return false;}
+ if(!lic){showLock("Code d’installation requis");return;}
+ if(lic.device!==deviceId()){showLock("Licence invalide");return;}
+ if(now<lic.last){showLock("Date système modifiée");return;}
  const days=Math.ceil((lic.expire-now)/86400000);
- if(days<=ALERT_DAYS){alertExpire.innerText="⚠️ Expire dans "+days+" jours";alertExpire.classList.remove("hidden")}
- if(now>lic.expire){showLock("Activation expirée");return false;}
- lic.last=now;localStorage.setItem("license",JSON.stringify(lic));return true;
-}
-function showLock(m){document.body.innerHTML="";document.body.appendChild(lockScreen);lockScreen.classList.remove("hidden");lockMsg.innerText=m}
-function checkLicense(){
- const c=licenseCode.value.trim(),now=Date.now();
- if(c===INSTALL_CODE){
-  localStorage.setItem("license",JSON.stringify({device:deviceId(),expire:now+ACTIVATION_DAYS*86400000,last:now}));
-  location.reload()
+ if(days<=ALERT_DAYS){
+  alertExpire.innerText="⚠️ Expire dans "+days+" jours";
+  alertExpire.classList.remove("hidden");
  }
- if(c===ACTIVATION_CODE){
-  const l=JSON.parse(localStorage.getItem("license"));
-  l.expire=now+ACTIVATION_DAYS*86400000;l.last=now;
-  localStorage.setItem("license",JSON.stringify(l));location.reload()
- }
+ if(now>lic.expire){showLock("Licence expirée");return;}
+ lic.last=now;
+ localStorage.setItem("license",JSON.stringify(lic));
+ lockScreen.classList.add("hidden");
+ app.classList.remove("hidden");
 }
-if(!checkAppLock()) throw "";
 
-/* ===== APP ===== */
-let store=JSON.parse(localStorage.getItem("store"))||{company:{name:"CASH MANAGER PRO",logo:"https://via.placeholder.com/120x40"},users:{},data:{Moncash:0,Natcash:0,history:[],counter:0}};
+function checkLicense(){
+ const c=licenseCode.value.trim();
+ const now=Date.now();
+ if(c===INSTALL_CODE){
+  localStorage.setItem("license",JSON.stringify({
+   device:deviceId(),
+   expire:now+DAYS_VALID*86400000,
+   last:now
+  }));
+  location.reload();
+ }
+ if(c===ACTIVATE_CODE){
+  const l=JSON.parse(localStorage.getItem("license"));
+  l.expire=now+DAYS_VALID*86400000;
+  l.last=now;
+  localStorage.setItem("license",JSON.stringify(l));
+  location.reload();
+ }
+}
+
+/* ================= APP ================= */
+let store=JSON.parse(localStorage.getItem("store"))||{
+ company:{name:"CASH MANAGER PRO",logo:"https://via.placeholder.com/120x40"},
+ users:{admin:{pass:"admin123"}},
+ data:{Moncash:0,Natcash:0}
+};
+
 function save(){localStorage.setItem("store",JSON.stringify(store))}
+
 function applyCompany(){
- companyHeader.innerText=companyTicket.innerText=companyReport.innerText=store.company.name;
- logoHeader.src=logoTicket.src=logoReport.src=store.company.logo;
- companyName.value=store.company.name;companyLogo.value=store.company.logo;
+ companyHeader.innerText=store.company.name;
+ logoHeader.src=store.company.logo;
+ companyName.value=store.company.name;
+ companyLogo.value=store.company.logo;
 }
 applyCompany();
 
-/* ===== RAPPORT ===== */
-function printDaily(){
- const today=new Date().toLocaleDateString();
- reportDate.innerText=today;
- let html="",tot={Moncash:0,Natcash:0};
- store.data.history.filter(x=>x.date===today).forEach(x=>{
-  tot[x.service]+=x.type==="depot"?x.amount:-x.amount;
- });
- html+=`Moncash : ${formatHTG(tot.Moncash)}<br>`;
- html+=`Natcash : ${formatHTG(tot.Natcash)}<br>`;
- reportContent.innerHTML=html;
- dailyReport.classList.remove("hidden");
- window.print();
- dailyReport.classList.add("hidden");
+function saveCompany(){
+ store.company.name=companyName.value;
+ store.company.logo=companyLogo.value;
+ applyCompany();save();
 }
 
-/* ===== TRANSACTION ===== */
+function login(){
+ if(user.value==="admin" && pass.value==="admin123"){
+  loginCard.classList.add("hidden");
+  transactionZone.classList.remove("hidden");
+  balanceZone.classList.remove("hidden");
+  adminZone.classList.remove("hidden");
+ }
+}
+
 function addTransaction(){
  const a=+amount.value,s=service.value,t=type.value;
- if(t==="retrait"&&a>store.data[s]){alert("Solde insuffisant");return;}
- store.data.counter++;
- const tr={id:"TX-"+store.data.counter,client:client.value,service:s,type:t,amount:a,date:new Date().toLocaleDateString(),time:new Date().toLocaleTimeString()};
+ if(t==="retrait" && a>store.data[s]){alert("Solde insuffisant");return;}
  store.data[s]+=t==="depot"?a:-a;
- store.data.history.push(tr);save();
- m.innerText=formatHTG(store.data.Moncash);n.innerText=formatHTG(store.data.Natcash);
- printTicket(tr);
-}
-
-function printTicket(x){
- t0.innerText="Transaction : "+x.id;
- t1.innerText="Client : "+x.client;
- t2.innerText="Service : "+x.service;
- t3.innerText="Type : "+x.type;
- t4.innerText="Montant : "+formatHTG(x.amount);
- t5.innerText=x.date+" "+x.time;
- ticket.classList.remove("hidden");window.print();ticket.classList.add("hidden");
+ m.innerText=store.data.Moncash;
+ n.innerText=store.data.Natcash;
+ save();
 }
 
 function logout(){location.reload();}
+
+/* START */
+checkApp();
 </script>
+
 </body>
 </html>
